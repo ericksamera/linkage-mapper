@@ -49,15 +49,17 @@ def _identify_chromosome(_key: str, _value: dict):
 
     temp_fasta = tempfile.NamedTemporaryFile()
     
+    print(_value['sequence'])
+
     with open(temp_fasta.name, 'w') as temp_fasta_file:
         temp_fasta_file.write("> temporary query\n")
         temp_fasta_file.write(f"{_value['sequence']}")
 
-        subprocess.run([
-            "blastn",
-            "-db", "~/agc/refs/raspberry-red/Rubus_idaeus_JoanJ.fna",
-            "-outfmt", "15",
-            "-query", f"{temp_fasta.name}"])
+    subprocess.run([
+        "blastn",
+        "-db", "data/Rubus_idaeus_JoanJ.fna",
+        "-outfmt", "15",
+        "-query", f"{temp_fasta.name}"])
 
 def _parse_linkage_map_csv(_csv_path: Path) -> dict:
     """
