@@ -56,7 +56,7 @@ def _identify_chromosome(_key: str, _value: dict):
         subprocess.run([
             "blastn",
             "-db", "~/agc/refs/raspberry-red/Rubus_idaeus_JoanJ.fna",
-            "-outfmt", "15"
+            "-outfmt", "15",
             "-query", f"{temp_fasta.name}"])
 
 def _parse_linkage_map_csv(_csv_path: Path) -> dict:
