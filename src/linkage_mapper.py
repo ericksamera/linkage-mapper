@@ -65,7 +65,7 @@ def _identify_chromosome(_key: str, _value: dict):
     
     with open('blast_output.json', 'r') as json_file:
         blast_object = json.load(json_file)
-        for i in blast_object['results']['search']['hits']:
+        for i in blast_object['report']['results']['search']['hits']:
             print(i)
 
 
