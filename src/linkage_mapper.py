@@ -19,6 +19,7 @@ from multiprocessing import Pool
 import pickle
 import tempfile
 import subprocess
+import json
 # --------------------------------------------------
 def get_args() -> Namespace:
     """ Get command-line arguments """
@@ -59,7 +60,14 @@ def _identify_chromosome(_key: str, _value: dict):
         "blastn",
         "-db", "data/Rubus_idaeus_JoanJ.fna",
         "-outfmt", "15",
-        "-query", f"{temp_fasta.name}"])
+        "-query", f"{temp_fasta.name}",
+        "-out", f"blast_output.json"])
+    
+    with open('blast_output.json', 'r') as json_file:
+        blast_object = json.load(json_file)
+        for i in blast_object['results']['search']['hits']:
+            print(i)
+
 
 def _parse_linkage_map_csv(_csv_path: Path) -> dict:
     """
