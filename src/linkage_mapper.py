@@ -118,6 +118,7 @@ def main() -> None:
         chromosome_candidates = []
         for marker in value.values():
             chromosome_candidates.append(_identify_chromosome(key, marker))
+        chromosome_candidates = sum(chromosome_candidates, [])
         print(collections.Counter(chromosome_candidates))
 
     return None
