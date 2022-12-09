@@ -45,32 +45,39 @@ def get_args() -> Namespace:
 
     return args
 # --------------------------------------------------
-def _identify_chromosome(_key: str, _value: dict) -> list:
+def _identify_chromosome(_linkage_group_dict: dict) -> str:
     """
     """
 
-    temp_fasta = tempfile.NamedTemporaryFile()
-    
-    if _value['sequence'] == "#N/A": return []
+    chromosome_candidates: list = []
 
-    with open(temp_fasta.name, 'w') as temp_fasta_file:
-        temp_fasta_file.write("> temporary query\n")
-        temp_fasta_file.write(f"{_value['sequence']}")
+    for marker in _linkage_group_dict.values():
 
-    subprocess.run([
-        "blastn",
-        "-db", "data/Rubus_idaeus_JoanJ.fna",
-        "-outfmt", "15",
-        "-query", f"{temp_fasta.name}",
-        "-out", f"blast_output.json"])
+        if marker['sequence'] == "#N/A": chromosome_candidates.append([])
+
+        temp_fasta = tempfile.NamedTemporaryFile()
+        with open(temp_fasta.name, 'w') as temp_fasta_file:
+            temp_fasta_file.write("> temporary query\n")
+            temp_fasta_file.write(f"{marker['sequence']}")
+
+        subprocess.run([
+            "blastn",
+            "-db", "data/Rubus_idaeus_JoanJ.fna",
+            "-outfmt", "15",
+            "-query", f"{temp_fasta.name}",
+            "-out", f"blast_output.json"])
+        
+        with open('blast_output.json', 'r') as json_file:
+            blast_object = json.load(json_file)
+            #print(blast_object)
+            blast_hits = (blast_object['BlastOutput2'][0]['report']['results']['search']['hits'])
+            matches = [str(hit['description'][0]['id']) for hit in blast_hits]
+
+            chromosome_candidates.append(matches)
     
-    with open('blast_output.json', 'r') as json_file:
-        blast_object = json.load(json_file)
-        #print(blast_object)
-        blast_hits = (blast_object['BlastOutput2'][0]['report']['results']['search']['hits'])
-        matches = [str(hit['description'][0]['id']) for hit in blast_hits]
-    
-    return matches
+    chromosome_candidates = sum(chromosome_candidates, [])
+
+    return collections.Counter(chromosome_candidates).most_common(1)[0][0]
 
 def _parse_linkage_map_csv(_csv_path: Path) -> dict:
     """
@@ -115,11 +122,8 @@ def main() -> None:
     linkage_map_dict: dict = _parse_linkage_map_csv(args.csv_path)
 
     for key, value in linkage_map_dict.items():
-        chromosome_candidates = []
-        for marker in value.values():
-            chromosome_candidates.append(_identify_chromosome(key, marker))
-        chromosome_candidates = sum(chromosome_candidates, [])
-        print(collections.Counter(chromosome_candidates))
+        chromosome = _identify_chromosome(value)
+        print(chromosome)
 
     return None
 # --------------------------------------------------
