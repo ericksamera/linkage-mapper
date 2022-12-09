@@ -131,3 +131,4 @@ dmypy.json
 # analysis
 data/
 *.json
+*.vcf
