@@ -45,7 +45,7 @@ def get_args() -> Namespace:
 
     return args
 # --------------------------------------------------
-def _identify_chromosome(_linkage_group_dict: dict) -> str:
+def _find_marker(_linkage_group_dict: dict) -> str:
     """
     """
 
@@ -53,7 +53,7 @@ def _identify_chromosome(_linkage_group_dict: dict) -> str:
 
     for marker in _linkage_group_dict.values():
 
-        if marker['sequence'] == "#N/A": chromosome_candidates.append([])
+        if marker['sequence'] == "#N/A": continue
 
         temp_fasta = tempfile.NamedTemporaryFile()
         with open(temp_fasta.name, 'w') as temp_fasta_file:
@@ -78,7 +78,39 @@ def _identify_chromosome(_linkage_group_dict: dict) -> str:
     chromosome_candidates = sum(chromosome_candidates, [])
 
     return collections.Counter(chromosome_candidates).most_common(1)[0][0]
+def _identify_chromosome(_linkage_group_dict: dict) -> str:
+    """
+    """
 
+    chromosome_candidates: list = []
+
+    for marker in _linkage_group_dict.values():
+
+        if marker['sequence'] == "#N/A": continue
+
+        temp_fasta = tempfile.NamedTemporaryFile()
+        with open(temp_fasta.name, 'w') as temp_fasta_file:
+            temp_fasta_file.write("> temporary query\n")
+            temp_fasta_file.write(f"{marker['sequence']}")
+
+        subprocess.run([
+            "blastn",
+            "-db", "data/Rubus_idaeus_JoanJ.fna",
+            "-outfmt", "15",
+            "-query", f"{temp_fasta.name}",
+            "-out", f"blast_output.json"])
+        
+        with open('blast_output.json', 'r') as json_file:
+            blast_object = json.load(json_file)
+            #print(blast_object)
+            blast_hits = (blast_object['BlastOutput2'][0]['report']['results']['search']['hits'])
+            matches = [str(hit['description'][0]['id']) for hit in blast_hits]
+
+            chromosome_candidates.append(matches)
+    
+    chromosome_candidates = sum(chromosome_candidates, [])
+
+    return collections.Counter(chromosome_candidates).most_common(1)[0][0]
 def _parse_linkage_map_csv(_csv_path: Path) -> dict:
     """
     """
