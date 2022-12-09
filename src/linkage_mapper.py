@@ -51,7 +51,7 @@ def _identify_chromosome(_key: str, _value: dict) -> list:
 
     temp_fasta = tempfile.NamedTemporaryFile()
     
-    if _value['sequence'] == "#N/A": return None
+    if _value['sequence'] == "#N/A": return []
 
     with open(temp_fasta.name, 'w') as temp_fasta_file:
         temp_fasta_file.write("> temporary query\n")
