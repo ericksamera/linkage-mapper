@@ -20,6 +20,7 @@ import pickle
 import tempfile
 import subprocess
 import json
+import collections
 # --------------------------------------------------
 def get_args() -> Namespace:
     """ Get command-line arguments """
@@ -44,13 +45,13 @@ def get_args() -> Namespace:
 
     return args
 # --------------------------------------------------
-def _identify_chromosome(_key: str, _value: dict):
+def _identify_chromosome(_key: str, _value: dict) -> list:
     """
     """
 
     temp_fasta = tempfile.NamedTemporaryFile()
     
-    print(_value['sequence'])
+    if _value['sequence'] == "#N/A": return None
 
     with open(temp_fasta.name, 'w') as temp_fasta_file:
         temp_fasta_file.write("> temporary query\n")
@@ -68,8 +69,8 @@ def _identify_chromosome(_key: str, _value: dict):
         #print(blast_object)
         blast_hits = (blast_object['BlastOutput2'][0]['report']['results']['search']['hits'])
         matches = [str(hit['description'][0]['id']) for hit in blast_hits]
-        print(matches)
-
+    
+    return matches
 
 def _parse_linkage_map_csv(_csv_path: Path) -> dict:
     """
@@ -114,8 +115,10 @@ def main() -> None:
     linkage_map_dict: dict = _parse_linkage_map_csv(args.csv_path)
 
     for key, value in linkage_map_dict.items():
+        chromosome_candidates = []
         for marker in value.values():
-            _identify_chromosome(key, marker)
+            chromosome_candidates.append(_identify_chromosome(key, marker))
+        print(collections.Counter(chromosome_candidates))
 
     return None
 # --------------------------------------------------
