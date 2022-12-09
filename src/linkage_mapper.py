@@ -66,8 +66,9 @@ def _identify_chromosome(_key: str, _value: dict):
     with open('blast_output.json', 'r') as json_file:
         blast_object = json.load(json_file)
         #print(blast_object)
-        print(blast_object['BlastOutput2'][0]['report']['results']['search']['hits'])
-        print(len(blast_object['BlastOutput2'][0]['report']['results']['search']['hits']))
+        blast_hits = (blast_object['BlastOutput2'][0]['report']['results']['search']['hits'])
+        matches = [str(hit['description'][0]['id']) for hit in blast_hits]
+        print(matches)
 
 
 def _parse_linkage_map_csv(_csv_path: Path) -> dict:
